@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- meta tags for SEO and social sharing -->
+    <meta name="author" content="Youssef Abouzeid">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#065f46">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ختمة القرآن">
+    <!-- أيقونة أجهزة أندرويد والمتصفحات -->
+    <link rel="icon" type="image/png" sizes="256x256" href="icon-256.png">
+    <!-- أيقونة أجهزة آيفون iOS (لا تدعم الشفافية إطلاقاً وتضع خلفية سوداء إذا كانت شفافة) -->
+    <link rel="apple-touch-icon" href="icon-256.png">
+    <!-- <link rel="apple-touch-icon" href="icon-192.png"> -->
+    <!-- end meta tags for SEO and social sharing -->
+    <title>متابعة ختمة القرآن</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+                    colors: { emerald: { 50: '#ecfdf5', 100: '#d1fae5', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body, html { font-family: 'Cairo', sans-serif; background-color: #f8fafc; direction: rtl; text-align: right; }
+        .part-btn-selected { background-color: #059669 !important; color: #ffffff !important; border-color: #047857 !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12" dir="rtl">
+
+    <header class="bg-emerald-800 text-white shadow-lg sticky top-0 z-50" dir="rtl">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <i class="fa-solid fa-quran text-3xl text-amber-300"></i>
+                <div class="text-right">
+                    <h1 class="text-xl font-bold leading-tight">متابعة ختمة القرآن</h1>
+                    <p class="text-xs text-emerald-200">جدول متابعة القراء</p>
+                </div>
+            </div>
+            <button onclick="shareToWhatsApp()" class="bg-green-500 hover:bg-green-600 active:scale-95 text-white p-2.5 rounded-full shadow-md transition flex items-center justify-center">
+                <i class="fa-brands fa-whatsapp text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 mt-6" dir="rtl">
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 mb-6 text-right">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-hands-praying text-emerald-600"></i> بيان إهداء الختمة
+                </h2>
+                <!-- زر مسح اسم المهدى إليه -->
+                <button type="button" onclick="clearDeceasedName()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-1 px-2.5 rounded-lg border border-rose-200 transition flex items-center gap-1">
+                    <i class="fa-solid fa-eraser"></i> مسح الاسم
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">الختمة للمغفور له / لها بإذن الله:</label>
+                <input type="text" id="deceasedInput" dir="rtl" placeholder="أدخل الاسم …" oninput="updateDeceasedName()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600 transition text-right">
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 mb-6" dir="rtl">
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                    <span class="block text-xs text-emerald-600 font-bold mb-1">عدد الأجزاء المقروءة</span>
+                    <span id="completed-count" class="text-2xl sm:text-3xl font-extrabold text-emerald-800">0</span>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                    <span class="block text-xs text-amber-600 font-bold mb-1">عدد الأجزاء المتبقية</span>
+                    <span id="remaining-count" class="text-2xl sm:text-3xl font-extrabold text-amber-800">30</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 mb-6 text-right" dir="rtl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-emerald-600"></i> إضافة / تحديث أجزاء لقارئ
+                </h2>
+                <button type="button" onclick="loadLastReaderState()" class="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold py-1.5 px-3 rounded-lg border border-emerald-200 transition flex items-center gap-1">
+                    <i class="fa-solid fa-clock-rotate-left"></i> استرجاع آخر إدخال
+                </button>
+            </div>
+
+            <form id="readerForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">اسم القارئ</label>
+                    <input type="text" id="readerInput" dir="rtl" placeholder="أدخل اسم القارئ" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition text-right" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">اختر الأجزاء (اضغط على الرقم لاختياره أو إلغائه):</label>
+                    <div id="partsGrid" class="grid grid-cols-6 sm:grid-cols-10 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl" dir="rtl"></div>
+                </div>
+
+                <div class="pt-2">
+                    <label class="flex items-center space-x-3 space-x-reverse cursor-pointer select-none">
+                        <input type="checkbox" id="statusCheckbox" class="w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 transition">
+                        <span class="text-sm font-semibold text-slate-700 mr-2">أتم هذا القارئ قراءة الأجزاء المختارة ✅</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> حفظ القارئ للأجزاء المختارة
+                </button>
+            </form>
+        </section>
+
+        <section class="flex flex-col sm:flex-row gap-3 mb-6" dir="rtl">
+            <button onclick="shareToWhatsApp()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp text-xl"></i> مشاركة التقرير على الواتساب
+            </button>
+            <button onclick="copyReportToClipboard()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-copy"></i> نسخ التقرير كـ نص
+            </button>
+            <button onclick="confirmReset()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> إعادة ضبط
+            </button>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden text-right" dir="rtl">
+            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 id="tableHeaderTitle" class="font-bold text-slate-800 flex items-center gap-2 text-base sm:text-lg">
+                    <i class="fa-solid fa-table-list text-emerald-600"></i><span>جدول الأجزاء والقراء</span>
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse" dir="rtl">
+                    <thead>
+                        <tr class="bg-slate-100/80 text-slate-600 text-xs uppercase font-extrabold border-b border-slate-200">
+                            <th class="py-3 px-4 w-16 text-center">الجزء</th>
+                            <th class="py-3 px-4 text-right">اسم القارئ</th>
+                            <th class="py-3 px-4 w-20 text-center">الحالة</th>
+                            <th class="py-3 px-4 w-16 text-center">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partsTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" dir="rtl" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-5 py-3 rounded-full shadow-2xl text-sm font-semibold opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2 z-50 text-center">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i><span id="toastMessage">تم التحديث بنجاح</span>
+    </div>
+
+    <div id="resetModal" dir="rtl" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-xl transform scale-95 transition-transform duration-300" id="resetModalContent">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">إعادة ضبط القائمة؟</h4>
+            <p class="text-xs text-slate-500 mb-6">سوف يتم مسح اسم المهدى إليه وجميع القراء والإبقاء على القائمة فارغة.</p>
+            <div class="flex gap-3">
+                <button onclick="executeReset()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl transition">نعم، مسح الكل</button>
+                <button onclick="closeResetModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'khatma_parts_readers_v16';
+        const LAST_READER_KEY = 'khatma_last_reader_input';
+        let partsData = [], deceasedName = '', selectedPartIds = new Set();
+
+        window.onload = function() { 
+            loadData(); 
+            renderPartsGrid(); 
+            renderTable(); 
+            updateProgress(); 
+            updateTableTitleUI();
+            loadLastReaderState(); 
+        };
+
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    partsData = parsed.partsData || [];
+                    deceasedName = parsed.deceasedName || '';
+                    document.getElementById('deceasedInput').value = deceasedName;
+                } catch (e) { initDefaultData(); }
+            } else { initDefaultData(); }
+        }
+
+        function initDefaultData() {
+            partsData = []; deceasedName = '';
+            for (let i = 1; i <= 30; i++) partsData.push({ id: i, readers: [] });
+            saveData();
+        }
+
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ deceasedName, partsData })); }
+
+        function saveLastReaderState(name, partsArray, isRead) {
+            localStorage.setItem(LAST_READER_KEY, JSON.stringify({ name, partsArray, isRead }));
+        }
+
+        function loadLastReaderState() {
+            const lastState = localStorage.getItem(LAST_READER_KEY);
+            if (lastState) {
+                try {
+                    const { name, partsArray, isRead } = JSON.parse(lastState);
+                    if (name) document.getElementById('readerInput').value = name;
+                    document.getElementById('statusCheckbox').checked = !!isRead;
+                    
+                    if (Array.isArray(partsArray) && partsArray.length > 0) {
+                        selectedPartIds = new Set(partsArray);
+                        updatePartButtonsUI();
+                    }
+                } catch(e) {}
+            }
+        }
+
+        function updateDeceasedName() {
+            deceasedName = document.getElementById('deceasedInput').value.trim();
+            saveData(); updateTableTitleUI();
+        }
+
+        // دالة مخصصة لمسح اسم المهدى إليه فقط
+        function clearDeceasedName() {
+            deceasedName = '';
+            document.getElementById('deceasedInput').value = '';
+            saveData();
+            updateTableTitleUI();
+            showToast('تم مسح اسم المهدى إليه');
+        }
+
+        function updateTableTitleUI() {
+            const el = document.getElementById('tableHeaderTitle');
+            el.innerHTML = deceasedName ? `<i class="fa-solid fa-table-list text-emerald-600"></i><span>ختمة القرآن للمغفور له / لها بإذن الله: <strong class="text-emerald-800">${deceasedName}</strong></span>` : `<i class="fa-solid fa-table-list text-emerald-600"></i><span>جدول الأجزاء والقراء</span>`;
+        }
+
+        function renderPartsGrid() {
+            const grid = document.getElementById('partsGrid'); grid.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button'; btn.id = `part-grid-btn-${i}`;
+                btn.className = `py-2 rounded-lg font-bold text-xs border border-slate-300 bg-white text-slate-700 hover:bg-emerald-50 transition ${selectedPartIds.has(i) ? 'part-btn-selected' : ''}`;
+                btn.textContent = i;
+                btn.onclick = () => togglePartSelection(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        function togglePartSelection(id) {
+            if (selectedPartIds.has(id)) selectedPartIds.delete(id); else selectedPartIds.add(id);
+            updatePartButtonsUI();
+        }
+
+        function deselectAllParts() { selectedPartIds.clear(); updatePartButtonsUI(); }
+
+        function updatePartButtonsUI() {
+            for (let i = 1; i <= 30; i++) {
+                const btn = document.getElementById(`part-grid-btn-${i}`);
+                if (btn) btn.className = `py-2 rounded-lg font-bold text-xs border border-slate-300 bg-white text-slate-700 hover:bg-emerald-50 transition ${selectedPartIds.has(i) ? 'part-btn-selected' : ''}`;
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('readerInput').value.trim();
+            const isRead = document.getElementById('statusCheckbox').checked;
+            if (!name || selectedPartIds.size === 0) { showToast('يرجى إدخال الاسم واختيار جزء على الأقل'); return; }
+
+            const selectedPartsArray = Array.from(selectedPartIds);
+
+            selectedPartsArray.forEach(partId => {
+                const p = partsData.find(x => x.id === partId);
+                if (p) p.readers.push({ id: 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), name, isRead });
+            });
+
+            saveData(); 
+            saveLastReaderState(name, selectedPartsArray, isRead);
+
+            renderTable(); updateProgress();
+            showToast('تمت إضافة البيانات بنجاح والحفظ في الذاكرة');
+            deselectAllParts();
+            document.getElementById('readerInput').value = '';
+            document.getElementById('statusCheckbox').checked = false;
+        }
+
+        function toggleReaderStatus(partId, readerId) {
+            const p = partsData.find(x => x.id === partId);
+            if (p) {
+                const r = p.readers.find(x => x.id === readerId);
+                if (r) { r.isRead = !r.isRead; saveData(); renderTable(); updateProgress(); showToast('تم تحديث الحالة'); }
+            }
+        }
+
+        function removeReader(partId, readerId) {
+            const p = partsData.find(x => x.id === partId);
+            if (p) { p.readers = p.readers.filter(x => x.id !== readerId); saveData(); renderTable(); updateProgress(); showToast('تم الحذف'); }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('partsTableBody'); tbody.innerHTML = '';
+            partsData.forEach(part => {
+                const hasReaders = part.readers.length > 0;
+                if (!hasReaders) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class="py-3 px-4 font-bold text-center text-slate-700 bg-slate-50/50">${part.id}</td><td class="py-3 px-4 text-slate-400 italic text-xs text-right">لم يُسجل قارئ بعد</td><td class="py-3 px-4 text-center text-slate-400 text-xs">-</td><td class="py-3 px-4 text-center"><button onclick="quickSelectPart(${part.id})" class="text-emerald-600 hover:text-emerald-800 p-1"><i class="fa-solid fa-plus text-xs"></i></button></td>`;
+                    tbody.appendChild(tr);
+                } else {
+                    part.readers.forEach((reader, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = reader.isRead ? 'bg-emerald-50/30' : '';
+                        let partTd = index === 0 ? `<td rowspan="${part.readers.length}" class="py-3 px-4 font-bold text-center text-slate-800 border-l border-slate-100 bg-slate-50/50 align-middle">${part.id}</td>` : '';
+                        const badge = reader.isRead ? `<button onclick="toggleReaderStatus(${part.id}, '${reader.id}')" class="w-8 h-8 font-bold bg-emerald-100 rounded-full">✅</button>` : `<button onclick="toggleReaderStatus(${part.id}, '${reader.id}')" class="w-8 h-8 font-bold bg-amber-100 rounded-full">⏳</button>`;
+                        tr.innerHTML = `${partTd}<td class="py-3 px-4 font-semibold text-slate-800 text-right">${reader.name}</td><td class="py-3 px-4 text-center">${badge}</td><td class="py-3 px-4 text-center"><button onclick="removeReader(${part.id}, '${reader.id}')" class="text-rose-400 hover:text-rose-600"><i class="fa-solid fa-trash-can text-xs"></i></button></td>`;
+                        tbody.appendChild(tr);
+                    });
+                }
+            });
+        }
+
+        function quickSelectPart(id) { deselectAllParts(); togglePartSelection(id); document.getElementById('readerInput').focus(); }
+
+        function updateProgress() {
+            let completed = partsData.filter(p => p.readers.length > 0 && p.readers.some(r => r.isRead)).length;
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('remaining-count').textContent = 30 - completed;
+        }
+
+        function generateReportText() {
+            let completed = partsData.filter(p => p.readers.length > 0 && p.readers.some(r => r.isRead)).length;
+            let text = deceasedName ? `🤲 *ختمة القرآن للمغفور له / لها بإذن الله:* ${deceasedName}\n\n` : '';
+            text += `📊 *المقروء:* ${completed} | *المتبقي:* ${30 - completed}\n───────────\n`;
+            partsData.forEach(p => {
+                const pNum = String(p.id).padStart(2, '0');
+                if (p.readers.length === 0) text += `${pNum} (لم يُحدد قارئ) ⏳\n`;
+                else p.readers.forEach(r => { text += `${pNum} ${r.name} ${r.isRead ? '✅' : '⏳'}\n`; });
+            });
+            text += `───────────\nتقبل الله منا ومنكم صالح الأعمال 🤲`;
+            return text;
+        }
+
+        async function shareToWhatsApp() {
+            const text = generateReportText();
+            if (navigator.share) {
+                try { await navigator.share({ title: 'تقرير الختمة', text }); return; } catch (e) {}
+            }
+            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        }
+
+        function copyReportToClipboard() {
+            const area = document.createElement('textarea'); area.value = generateReportText(); document.body.appendChild(area); area.select();
+            document.execCommand('copy'); document.body.removeChild(area);
+            showToast('تم نسخ التقرير بنجاح ✅');
+        }
+
+        function confirmReset() { document.getElementById('resetModal').classList.remove('opacity-0', 'pointer-events-none'); }
+        function closeResetModal() { document.getElementById('resetModal').classList.add('opacity-0', 'pointer-events-none'); }
+        
+        function executeReset() { 
+            initDefaultData(); 
+            
+            // مسح قيم حقول الواجهة وحالة الحفظ المؤقت
+            document.getElementById('deceasedInput').value = ''; 
+            document.getElementById('readerInput').value = '';
+            document.getElementById('statusCheckbox').checked = false;
+            deselectAllParts();
+            
+            localStorage.removeItem(LAST_READER_KEY); 
+            
+            renderTable(); 
+            updateProgress(); 
+            updateTableTitleUI();
+            closeResetModal(); 
+            showToast('تمت إعادة الضبط ومسح كافة المدخلات'); 
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast'); document.getElementById('toastMessage').textContent = msg;
+            t.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 3000);
+        }
+    </script>
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then((reg) => console.log('PWA Service Worker registered:', reg))
+                .catch((err) => console.log('PWA Service Worker registration failed:', err));
+            });
+        }
+    </script>
+    <!-- end PWA Service Worker -->
+</body>
+</html>
